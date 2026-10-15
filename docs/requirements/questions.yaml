@@ -1,0 +1,51 @@
+questions:
+  - id: Q-01
+    text: "Should a donor only be able to fund organisations in the vetted directory? Today save_user_choice accepts any non-empty org_name, and neither the merchant nor the payment tool checks it against data/femtech_programs.py."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:53-76 (R-07, R-08)"
+    blocking: true
+    assumption: "Yes. Only vetted initiatives should be fundable, and the missing check is a defect, not a feature."
+  - id: Q-02
+    text: "Is the payment flow meant to stay a simulation (demo/hackathon), or will real money move? If real: which payment provider or rails (card acquirer, M-Pesa, bank transfer, crypto for DAOs), and in which currencies?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:128-143 (R-16); README.md:15"
+    blocking: true
+    assumption: "It is a demo. Settlement, tokens and consent are deliberately simulated, and only USD card payments are modelled."
+  - id: Q-03
+    text: "Must donor consent be enforced by the platform (for example ADK tool confirmation, require_confirmation=True) rather than only by the LLM prompt? The tool currently hard-codes consent_granted = True."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/credentials_provider/agent.py:76-78; tools/payment_tools.py:128; credentials_provider/agent_mock.py:15 (R-13)"
+    blocking: false
+    assumption: "Prompt-level consent is fine for the demo, but any real-money version needs consent enforced in code."
+  - id: Q-04
+    text: "Who should sign the CartMandate, and with what keys? Today the 'organisation signature' is an unkeyed, truncated SHA-256 hash that anyone can recompute, and the payment step never checks it."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/merchant_tools.py:54-74 (R-12)"
+    blocking: false
+    assumption: "Signatures are illustrative only. Real signing (organisation-held or platform-held keys) is future work."
+  - id: Q-05
+    text: "Where and how will the agent be hosted and reached by donors (adk web locally, Vertex AI Agent Engine, a custom web app)? Must sessions and transaction records persist beyond one in-memory session?"
+    source: "requirements.txt:2 (agent-engines extra); README.md:38-40; scripts/test_merchant.py:26 (R-26)"
+    blocking: false
+    assumption: "It runs in the ADK dev tooling or on Vertex AI Agent Engine with default session storage. Nothing persists beyond the session."
+  - id: Q-06
+    text: "What is the real source of truth and vetting process for the initiative directory (who verifies, how often, where do rating and efficiency come from), and what registration ID should replace the name-derived mock_reg_id?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/data/femtech_programs.py:1-21; tools/femtechorgs_tools.py:88-90 (R-03, R-04)"
+    blocking: false
+    assumption: "The five hard-coded entries are sample data maintained by the developers, and the names are unique."
+  - id: Q-07
+    text: "Which regions should be supported, and how should free-text regions map onto them? The tool docstring mentions 'west-africa', which has no data, and prompts mention 'East Africa' and 'Global Diaspora', which do not match the hyphenated keys after .lower()."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:23; finding_agent/agent.py:21; data/femtech_programs.py:70-76 (R-03, R-05)"
+    blocking: false
+    assumption: "The LLM is expected to normalise user wording to pan-africa, east-africa, global-diaspora or africa."
+  - id: Q-08
+    text: "What donation limits and rules apply: minimum amount, the USD 1,000,000 maximum, fees, refunds (requires_refundability is false), and receipts or tax documentation?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:68-74, 97 (R-07, R-08)"
+    blocking: false
+    assumption: "Any positive amount up to USD 1,000,000, no refunds, no receipt beyond the transaction ID."
+  - id: Q-09
+    text: "The README promises 'real-time updates on how the funds are being used'. Is that in scope, and where would that data come from?"
+    source: "README.md:15"
+    blocking: false
+    assumption: "Out of scope for the current version. No code implements it."
+  - id: Q-10
+    text: "Should Naive_Agent and agent_mock.py stay in the package, and what is the intended test strategy? agent_mock.py imports a non-existent 'charity_advisor' package, and scripts/test_merchant.py imports root_agent from merchant_agent.agent, where it is not defined."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/credentials_provider/agent_mock.py:7; scripts/test_merchant.py:19 (R-17, R-18, R-19)"
+    blocking: false
+    assumption: "Naive_Agent is kept on purpose as a demo contrast. The mock and the test script are leftovers from a 'charity advisor' template and are currently broken."
