@@ -1,0 +1,51 @@
+questions:
+  - id: Q-01
+    text: "Is Afara Dada Code a competition/hackathon demo, or is it intended to become a production payment system? The code simulates both the payment and the cryptographic signature."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:128-143 (consent hardcoded, simulation flag)"
+    blocking: true
+    assumption: "It is a prototype built for demonstration (e.g., a Google AI hackathon); production hardening is out of scope for now."
+  - id: Q-02
+    text: "The payment tool hardcodes consent_granted = True and the confirmation is only enforced by the LLM's instruction, not by code. Should the tool itself verify the donor's confirmation before creating a PaymentMandate?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:128"
+    blocking: true
+    assumption: "Consent is enforced at the conversation layer only; the tool assumes the agent instruction was followed."
+  - id: Q-03
+    text: "Organizations are identified purely by name (no EIN or registration number). What is the plan for stable organization identifiers and real verification data?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:88-90"
+    blocking: false
+    assumption: "Names are sufficient for the curated five-organization dataset; a registry integration would replace the mock ID."
+  - id: Q-04
+    text: "The region taxonomy supports pan-africa, east-africa and global-diaspora, but two organizations are HQ'd in West Africa and 'west-africa' returns no results. What regions must be supported, and should regions derive from HQ location?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/data/femtech_programs.py:10-67"
+    blocking: false
+    assumption: "The three-region taxonomy is intentional for the demo and the West-Africa gap is a data-entry choice, not a bug."
+  - id: Q-05
+    text: "Who is the donor in terms of accounts and identity? There is no user profile, authentication, or persistence beyond an in-memory ADK session. Is donor identity management planned?"
+    source: "afara-dada-code-agents/scripts/test_merchant.py:29-30 (InMemorySessionService, test user)"
+    blocking: false
+    assumption: "Donors are anonymous; sessions are ephemeral and per-conversation."
+  - id: Q-06
+    text: "The README enables aiplatform, secretmanager and cloudtrace APIs and requirements.txt pulls in Agent Engine, but there is no deployment code. Is the deployment target Vertex AI Agent Engine, local ADK, or both?"
+    source: "README.md:38-40; requirements.txt:2"
+    blocking: false
+    assumption: "Local ADK dev mode is the primary runtime today; Agent Engine is aspirational."
+  - id: Q-07
+    text: "credentials_provider/agent_mock.py imports from a non-existent 'charity_advisor' package (a leftover from a rename), and scripts/test_merchant.py imports 'root_agent' from merchant_agent.agent where only 'merchant_agent' is defined, so both files fail to import. Are these files still needed, and should the imports be fixed?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/credentials_provider/agent_mock.py:7; afara-dada-code-agents/scripts/test_merchant.py:19"
+    blocking: false
+    assumption: "The mock agent is dead code from an earlier 'charity_advisor' iteration; the test script needs its import corrected before use."
+  - id: Q-08
+    text: "What is the integration plan for real settlement (card processor, bank transfer, or crypto/DAO treasury), and does the AP2 CartMandate/PaymentMandate structure need to survive unchanged into that integration?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:133-143"
+    blocking: false
+    assumption: "AP2's mandate structures were chosen specifically so a real payment processor can replace the simulation without changing the agent contracts."
+  - id: Q-09
+    text: "How should the curated organization dataset be governed going forward — who vets new organizations, how often are trust metrics refreshed, and is a database planned to replace the hardcoded list?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/data/femtech_programs.py:1-4 ('Mock database')"
+    blocking: false
+    assumption: "The hardcoded list is a demo fixture; verification governance is a future concern."
+  - id: Q-10
+    text: "Donations are USD-only with a $1,000,000 cap. Are multi-currency donations (e.g., KES, NGN, GHS) and donor-local payment methods in scope?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:73-74, 110"
+    blocking: false
+    assumption: "USD-only is a demo simplification; the W3C PaymentRequest structure already carries currency so extension is straightforward."
