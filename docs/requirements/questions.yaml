@@ -1,0 +1,51 @@
+questions:
+  - id: Q-01
+    text: "Is the payment step meant to stay a simulation (demo/hackathon scope), or will a real payment provider (card processor, mobile money such as M-Pesa, or crypto for DAO donors) be integrated? If so, which one?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:128-143; README.md (\"process donations securely\"); R-19"
+    blocking: true
+    assumption: "Settlement is simulated on purpose. The documents describe the current demo, and real money movement is out of scope."
+  - id: Q-02
+    text: "Should donors only be able to fund organisations in the vetted list? Today save_user_choice accepts any non-empty organisation name, so the LLM can create an IntentMandate for an unvetted entity."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:53-76; R-07"
+    blocking: true
+    assumption: "Only vetted organisations are meant to be fundable. The missing check is a defect (recorded in nfr-and-threats.md), not a feature."
+  - id: Q-03
+    text: "Must donor consent before payment be enforced by the system (for example an ADK tool confirmation or a consent argument the tool checks), or is a prompt instruction to the LLM enough? Today the payment tool hard-codes consent_granted = True."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:128; credentials_provider/agent.py:33-39,77; credentials_provider/agent_mock.py:15; R-16"
+    blocking: true
+    assumption: "Consent is meant to be a hard gate. The prompt-only enforcement and hard-coded True are demo shortcuts."
+  - id: Q-04
+    text: "Who owns the vetted-organisation data, where should it eventually come from (a database, a registry, partner attestations), and what process decides that an organisation is 'verified' and sets its rating and efficiency figures?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/data/femtech_programs.py:1-67; README.md (\"verifies and aggregates credible, certified\")"
+    blocking: false
+    assumption: "The five hard-coded entries are sample data maintained by the developers. The figures are taken from the organisations' public claims and have not been audited."
+  - id: Q-05
+    text: "Where will the agent run in production (local `adk web`, Vertex AI Agent Engine, Cloud Run), and must sessions and mandates be kept beyond the running process for audit?"
+    source: "requirements.txt:2 (google-cloud-aiplatform[adk,agent-engines]); README.md:38-40; scripts/test_merchant.py:26 (InMemorySessionService)"
+    blocking: false
+    assumption: "Today it is run locally through the ADK dev tooling with in-memory sessions. Vertex AI Agent Engine is the likely deployment target, given the dependencies."
+  - id: Q-06
+    text: "Is USD the only donation currency, or should donors give in local currencies (KES, NGN, GHS)? Are the limits (more than 0 and at most 1,000,000 USD, with no minimum) the right ones?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:69-74,110; tools/merchant_tools.py:134,138"
+    blocking: false
+    assumption: "USD only, with the coded limits. Amounts are floats with 2-decimal display."
+  - id: Q-07
+    text: "Which regions should donors be able to ask for? The tool docstring mentions 'west-africa' but the data has no such key, and country names such as 'Kenya' are not mapped to regions."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:23; data/femtech_programs.py:10-76; R-03"
+    blocking: false
+    assumption: "The supported regions are pan-africa, east-africa, global-diaspora and the alias africa. The LLM is expected to turn free text like 'Kenya' into a region key."
+  - id: Q-08
+    text: "Are donor-facing features after the donation (receipts, tax documents, the 'real-time updates on how the funds are being used' promised in the README) and donor identification or login in scope?"
+    source: "README.md:15; no implementing code found"
+    blocking: false
+    assumption: "These are out of scope for the current version. Donors are anonymous session users, and nothing happens after the transaction."
+  - id: Q-09
+    text: "Should the CartMandate 'organisation signature' become a real cryptographic signature using keys held by, or for, each organisation? Should the payment step verify it?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/merchant_tools.py:54-74; tools/payment_tools.py (no verification); R-14"
+    blocking: false
+    assumption: "The unkeyed SHA-256 'SIG_' value is a placeholder that only shows the AP2 flow. It gives no authenticity guarantee."
+  - id: Q-10
+    text: "Has the full end-to-end flow, including the donor's 'yes' on the confirmation turn, been demonstrated? When the donor confirms, should the flow resume at the payment step, and what should happen if the same cart or intent is used twice (duplicate payment)?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/agent.py:14-21,50-58; credentials_provider/agent.py:33-39; tools/payment_tools.py:146-147"
+    blocking: false
+    assumption: "The confirmation reply is expected to reach the CredentialsProvider. Each cart should be paid at most once, but the code does not enforce this."
