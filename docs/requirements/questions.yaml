@@ -1,0 +1,54 @@
+questions:
+  - id: Q-01
+    text: "Is real money movement ever intended for this system, and if so via which payment rails (card PSP, bank transfer, crypto/DAO treasury)? The code marks every transfer 'simulation: true'."
+    source: "tools/payment_tools.py:142 ('simulation': True); README.md positioning as a funding pathway"
+    blocking: false
+    assumption: "This is a demo/prototype stage; simulated payment is intentional and production rails are a future decision."
+
+  - id: Q-02
+    text: "User consent is enforced only in the Credentials Provider's prompt instruction — the tool hardcodes consent_granted = True. Is prompt-level confirmation considered sufficient, or must consent be captured as an actual tool input?"
+    source: "tools/payment_tools.py:128 (consent_granted = True); credentials_provider/agent.py:33-39"
+    blocking: true
+    assumption: "Demo-acceptable; but any design claiming an auditable consent trail needs the consent to be a real parameter, not a constant."
+
+  - id: Q-03
+    text: "How will the curated organization database be maintained and re-verified over time (who vets organizations, how often, against what criteria)?"
+    source: "data/femtech_programs.py (hardcoded list of 5 organizations with static trust metrics)"
+    blocking: false
+    assumption: "The static list is a demo stand-in for a future verified registry; trust metrics are point-in-time snapshots."
+
+  - id: Q-04
+    text: "credentials_provider/agent_mock.py imports from 'charity_advisor.tools.payment_tools', a package that does not exist in this repo. Should this mock be fixed to the femtech_empowerment_funding_advisor path, or deleted?"
+    source: "credentials_provider/agent_mock.py:7"
+    blocking: false
+    assumption: "Leftover from an earlier project name ('charity_advisor'); currently dead code that would fail on import."
+
+  - id: Q-05
+    text: "What is the production deployment story — the README enables Agent Engine APIs but the repo contains no deployment code. Is Vertex AI Agent Engine the target, and with which session/state service?"
+    source: "README.md:39-40; requirements.txt google-cloud-aiplatform[adk,agent-engines]; scripts/test_merchant.py uses InMemorySessionService"
+    blocking: false
+    assumption: "Agent Engine deployment is planned but not yet implemented; state persistence is unresolved."
+
+  - id: Q-06
+    text: "Is USD the only supported currency by design? The IntentMandate, CartMandate and PaymentMandate all hardcode USD."
+    source: "tools/femtechorgs_tools.py:110 ('currency': 'USD'); merchant_tools.py:134; payment flows"
+    blocking: false
+    assumption: "USD-only is a deliberate demo simplification."
+
+  - id: Q-07
+    text: "The merchant 'signature' is an unkeyed SHA-256 prefix (SIG_<hash16>). Will real asymmetric signatures (organization key pairs) be introduced, or is the current simulation the accepted design?"
+    source: "tools/merchant_tools.py:54-74"
+    blocking: true
+    assumption: "Simulated signatures are demo-only; any production trust claim requires keyed signatures, otherwise the signature is forgeable by anyone."
+
+  - id: Q-08
+    text: "Who normalizes region input? The data layer matches exact lowercase keys ('east-africa'), so a donor saying 'East Africa' or 'Kenya' returns no results unless the LLM happens to translate it."
+    source: "data/femtech_programs.py:70-75; tools/femtechorgs_tools.py:find_tech_initiatives"
+    blocking: false
+    assumption: "The LLM is expected to map natural-language regions to the three known keys, but nothing enforces it."
+
+  - id: Q-09
+    text: "Should expired or abandoned intents/carts have a user-visible recovery path (re-confirm, restart), and is any refund/cancellation flow planned given requires_refundability is always False?"
+    source: "tools/femtechorgs_tools.py:97; tools/merchant_tools.py expiry errors returned to the agent"
+    blocking: false
+    assumption: "The orchestrator agent is expected to narrate expiry errors back to the donor and restart the flow; no refund path exists."
