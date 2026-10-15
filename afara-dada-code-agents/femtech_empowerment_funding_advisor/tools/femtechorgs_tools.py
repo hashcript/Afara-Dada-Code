@@ -18,9 +18,11 @@ logger = logging.getLogger(__name__)
 async def find_tech_initiatives(region: str) -> Dict[str, Any]:
     """
     Finds vetted female tech empowerment initiatives for a specific African region.
-    
+
     Args:
-        region (str): The region to search (e.g., 'east-africa', 'pan-africa', 'west-africa').
+        region (str): The region to search. Accepts region keys ('east-africa',
+            'west-africa', 'pan-africa', 'global-diaspora'), country or city
+            names ('kenya', 'nigeria'), or 'africa' for all initiatives.
 
     Returns:
         A dictionary containing the search results with verification details.

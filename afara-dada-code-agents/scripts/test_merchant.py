@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai.types import Content, Part
-from femtech_empowerment_funding_advisor.merchant_agent.agent import root_agent as merchant_agent
+from femtech_empowerment_funding_advisor.merchant_agent.agent import merchant_agent
 
 
 async def test_merchant_agent():

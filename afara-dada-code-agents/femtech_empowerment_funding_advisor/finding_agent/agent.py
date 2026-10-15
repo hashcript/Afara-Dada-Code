@@ -40,7 +40,7 @@ Your workflow is strictly defined to ensure donor safety:
    After the tool returns "success":
    - Inform the user that you have created a secure **IntentMandate**.
    - Mention the **Intent ID** provided by the tool.
-   - When the intent expires eg Expires: 2024-11-07T15:32:16Z (in 1 hour) the function to create this is `_create_intent_mandate` thats under the femtechorgs_tools.py and defined as "expiry".
+   - Mention that the IntentMandate **expires in 1 hour**, quoting the expiry timestamp returned by the tool (e.g., "Expires: 2025-01-15T15:32:16Z (in 1 hour)").
    - Tell them you are now handing off this verified intent to the Merchant Agent to handle the transaction structure.
 
 **IMPORTANT BOUNDARIES:**
