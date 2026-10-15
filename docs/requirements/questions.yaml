@@ -1,0 +1,51 @@
+questions:
+  - id: Q-01
+    text: "Is the system meant to move real money? If so, through which payment rail (card networks via a PSP, mobile money such as M-Pesa, bank transfer, crypto for DAOs), and what donor identity or KYC/AML checks apply?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py (simulation: True, hard-coded token); R-18"
+    blocking: true
+    assumption: "The system is a demo. Payments stay simulated and no donor identity or payment credentials are collected."
+  - id: Q-02
+    text: "Must donor consent be enforced in code, with a tool-level confirmation (FunctionTool require_confirmation=True) and a real consent flag, instead of relying on the LLM prompt alone?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/credentials_provider/agent.py:76-78; tools/payment_tools.py:128; credentials_provider/agent_mock.py:15; R-15"
+    blocking: true
+    assumption: "Explicit consent is a hard requirement. Today the Gemini prompt is the only control and the stored consent is always true."
+  - id: Q-03
+    text: "Should save_user_choice reject any organisation that is not in the vetted registry, and should organisations be keyed by a real registration number instead of their name?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:53-113; R-07, R-08"
+    blocking: true
+    assumption: "Only registry organisations should be fundable. The current code accepts any non-empty name."
+  - id: Q-04
+    text: "Who vets the organisations, where do the rating, efficiency and impact figures come from, how often are they refreshed, and where should the registry live (a database or an admin tool)?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/data/femtech_programs.py"
+    blocking: false
+    assumption: "The 5 hard-coded records are illustrative demo data, edited by developers in code."
+  - id: Q-05
+    text: "How is the system deployed and accessed by donors: adk web or run locally, Vertex AI Agent Engine (requirements.txt pulls the agent-engines extra and the README enables Secret Manager and Cloud Trace), or a custom front end?"
+    source: "requirements.txt:2; README.md:38-43"
+    blocking: false
+    assumption: "It runs locally with the ADK dev tooling (adk web / adk run) against the Gemini API using GOOGLE_API_KEY, with in-memory sessions."
+  - id: Q-06
+    text: "Which currencies and limits apply? Is USD only, a minimum of just over 0 and a maximum of USD 1,000,000 per donation correct, and are recurring or split donations needed?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:68-75,110; tools/merchant_tools.py:134-138"
+    blocking: false
+    assumption: "There is a single one-off donation in USD, capped at USD 1,000,000."
+  - id: Q-07
+    text: "Will organisations hold their own signing keys so that CartMandates carry real, verifiable signatures, and must the Credentials Provider verify that signature and the cart-to-intent link before paying?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/merchant_tools.py:54-74; tools/payment_tools.py:95-131; R-14"
+    blocking: false
+    assumption: "The SHA-256 hash 'signature' is a placeholder and nothing verifies it."
+  - id: Q-08
+    text: "Which regions and organisations are in scope? The tool docstring mentions 'west-africa', which does not exist, and the README names Mentor Match Kenya and Because She Can, which are not in the registry."
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:23; data/femtech_programs.py; README.md:13"
+    blocking: false
+    assumption: "The scope is the three regions and five organisations in femtech_programs.py, and the LLM maps the donor's wording onto those keys."
+  - id: Q-09
+    text: "Is 'real-time updates on how the funds are being used' (README) in scope? If so, which data source would report how funds were used after the donation?"
+    source: "README.md:15"
+    blocking: false
+    assumption: "It is out of scope for now. No code supports it."
+  - id: Q-10
+    text: "Is the Naive_Agent (open-web Google Search) only a demo baseline, or should it ship with the product? And is the preview model gemini-3-pro-preview acceptable beyond the demo?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/Naive_Agent/agent.py; R-20, R-23"
+    blocking: false
+    assumption: "The Naive_Agent exists only for before/after comparison, and the preview model is fine for the demo."
