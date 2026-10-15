@@ -4,7 +4,7 @@ Mock Credentials Provider Agent for automated testing (no confirmation required)
 
 from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
-from charity_advisor.tools.payment_tools import create_payment_mandate
+from femtech_empowerment_funding_advisor.tools.payment_tools import create_payment_mandate
 
 
 credentials_provider_mock = Agent(
