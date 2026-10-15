@@ -20,7 +20,9 @@ async def find_tech_initiatives(region: str) -> Dict[str, Any]:
     Finds vetted female tech empowerment initiatives for a specific African region.
     
     Args:
-        region (str): The region to search (e.g., 'east-africa', 'pan-africa', 'west-africa').
+        region (str): The region to search. One of 'pan-africa', 'east-africa',
+            'global-diaspora', or 'africa' for all initiatives. A country, city or
+            sub-region (e.g., 'Kenya', 'Lagos', 'West Africa') is matched against HQ.
 
     Returns:
         A dictionary containing the search results with verification details.
@@ -64,7 +66,12 @@ def _validate_donation_data(org_name: str, amount: float) -> tuple[bool, str]:
     # Validate Organization Name
     if not org_name or not org_name.strip():
         return False, "Organization name cannot be empty."
-    
+
+    # Only vetted organizations from the trusted data layer can receive funds
+    vetted_names = [i["name"] for i in get_initiatives_by_region("africa")]
+    if org_name not in vetted_names:
+        return False, f"'{org_name}' is not a vetted initiative. Choose one of: {', '.join(vetted_names)}"
+
     # Validate Amount
     if amount <= 0:
         return False, f"Donation amount must be positive, got: ${amount}"

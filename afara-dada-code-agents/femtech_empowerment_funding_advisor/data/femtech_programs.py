@@ -4,7 +4,11 @@ This represents the 'Trusted Data Layer' your agent accesses.
 """
 
 def get_initiatives_by_region(region: str):
-    """Returns a list of vetted female tech empowerment initiatives for a given African region."""
+    """Returns a list of vetted female tech empowerment initiatives for a given African region.
+
+    Accepts a region key ('pan-africa', 'east-africa', 'global-diaspora'), 'africa'/'all'
+    for every initiative, or a location (country, city or sub-region) matched against HQ.
+    """
     
     # Normalized database of 5 highly credible organizations
     initiatives_db = {
@@ -60,17 +64,27 @@ def get_initiatives_by_region(region: str):
                 "impact_metrics": "5,000+ women empowered; 3,000+ trained in technical bootcamps.",
                 "rating": 4.8,
                 "efficiency": 0.94,
-                "verification_source": " Verified Non-Profit Community; High engagement in open-source contributions.",
+                "verification_source": "Verified Non-Profit Community; High engagement in open-source contributions.",
                 "website": "empowerhercommunity.net"
             }
         ]
     }
 
+    # Normalize free-text input (e.g. "East Africa", "east_africa") to the db keys ("east-africa")
+    region_key = "-".join(region.strip().lower().replace("_", " ").split())
+
+    all_initiatives = []
+    for key in initiatives_db:
+        all_initiatives.extend(initiatives_db[key])
+
     # Helper logic to return all if 'africa' is requested, otherwise specific region
-    if region.lower() == "africa":
-        all_initiatives = []
-        for key in initiatives_db:
-            all_initiatives.extend(initiatives_db[key])
+    if region_key in ("africa", "all"):
         return all_initiatives
-    
-    return initiatives_db.get(region.lower(), [])
+
+    if region_key in initiatives_db:
+        return initiatives_db[region_key]
+
+    # Fall back to matching the HQ location, so countries, cities and sub-regions
+    # without their own key (e.g. "Kenya", "Nigeria", "West Africa") still resolve
+    location = region_key.replace("-", " ")
+    return [i for i in all_initiatives if location in i["hq"].lower()]
