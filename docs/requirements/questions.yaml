@@ -1,0 +1,60 @@
+questions:
+  - id: Q-01
+    text: "Is moving real money in scope? If so, which payment provider and rails should be supported: card (Visa/Mastercard as in the cart), bank transfer, mobile money (e.g. M-Pesa), or crypto for DAO donors?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:128-143 (simulated transfer); R-29"
+    blocking: true
+    assumption: "The system is a demo. Payment, card token and transaction are all simulated, and no payment provider integration is designed."
+
+  - id: Q-02
+    text: "Who vets the organisations, by what criteria, and how is the registry kept up to date? Where do 'rating' and 'efficiency' come from, and what should replace the hard-coded Python dictionary?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/data/femtech_programs.py:1-67; R-04, R-32"
+    blocking: true
+    assumption: "The 5 hard-coded organisations and their metrics are illustrative. The registry is curated by hand by the project team, and changes go through code releases."
+
+  - id: Q-03
+    text: "Must donor consent be enforced by the system rather than by the LLM prompt alone? (For example, set ADK FunctionTool require_confirmation=True on create_payment_mandate and record the donor's actual answer instead of the hard-coded consent_granted=True.)"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:128; credentials_provider/agent.py:76-78; credentials_provider/agent_mock.py:15; R-14"
+    blocking: true
+    assumption: "Explicit consent is a hard requirement. Today it relies only on the model following its instructions, which is accepted for the demo and treated as a top risk."
+
+  - id: Q-04
+    text: "Should save_user_choice reject an organisation name that is not in the vetted registry (or does not exactly match a registry entry)?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:53-76; finding_agent/agent.py:37; R-08"
+    blocking: false
+    assumption: "Yes, only vetted organisations should be fundable. The current code accepts any non-empty name and trusts the LLM to pass a registry name."
+
+  - id: Q-05
+    text: "Which regions should donors be able to search (e.g. west-africa, which the tool docstring mentions but the data lacks; southern/north Africa; per country)? Should free-text phrases like 'East Africa' or 'Kenya' map to region keys?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:23; data/femtech_programs.py:11-76; finding_agent/agent.py:21; R-04"
+    blocking: false
+    assumption: "Only pan-africa, east-africa, global-diaspora and the 'africa' wildcard exist. The LLM turns the donor's phrasing into these hyphenated keys."
+
+  - id: Q-06
+    text: "In a real deployment, who signs the CartMandate: the organisation itself with its own key, or the platform for it? How should the payment step verify that signature?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/merchant_tools.py:54-74; tools/payment_tools.py:95-128; R-13"
+    blocking: false
+    assumption: "The signature is a placeholder (an unkeyed, truncated SHA-256) and nothing downstream checks it."
+
+  - id: Q-07
+    text: "What must happen after a donation: donor identity/KYC, tax receipts, a persistent ledger of transactions, and the README's promised 'real-time updates on how the funds are being used'?"
+    source: "README.md:15; afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/payment_tools.py:145-147; R-32"
+    blocking: false
+    assumption: "None of this is in scope yet. Donors are anonymous session users, and the transaction lives only in ADK session state."
+
+  - id: Q-08
+    text: "Are USD-only donations and the 0 < amount <= 1,000,000 limit the intended business rules? Are minimums, recurring donations or local currencies needed?"
+    source: "afara-dada-code-agents/femtech_empowerment_funding_advisor/tools/femtechorgs_tools.py:68-76, 110; R-08, R-33"
+    blocking: false
+    assumption: "One-off USD donations up to $1,000,000, as coded ('increased cap for institutional donors')."
+
+  - id: Q-09
+    text: "Which AP2 release should the project depend on? requirements.txt installs AP2 from git main without a pinned version."
+    source: "requirements.txt:3; R-30"
+    blocking: false
+    assumption: "The AP2 mandate models (IntentMandate, CartMandate, PaymentMandate and the W3C payment types) are as used in the code at the time of writing. Field-level docs are limited to what the code sets."
+
+  - id: Q-10
+    text: "Where will the agent run in production (adk web/dev UI, Cloud Run, or Vertex AI Agent Engine), and which ADK session service (in-memory vs. persistent) should hold the mandate chain?"
+    source: "README.md:38-40; requirements.txt:2 (google-cloud-aiplatform[adk,agent-engines]); scripts/test_merchant.py:26; R-31"
+    blocking: false
+    assumption: "Development runs locally with the ADK tooling and the in-memory session service. The intended production target is Vertex AI Agent Engine, which the agent-engines extra and enabled APIs suggest."
